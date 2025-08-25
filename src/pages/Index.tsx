@@ -2,6 +2,8 @@ import { Header } from "@/components/dashboard/Header";
 import { StatsCards } from "@/components/dashboard/StatsCards";
 import { WorkEntryForm } from "@/components/work-entry/WorkEntryForm";
 import { RecentWorkTable } from "@/components/work-entry/RecentWorkTable";
+import { CollegeManagement } from "@/components/colleges/CollegeManagement";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const Index = () => {
   return (
@@ -16,10 +18,21 @@ const Index = () => {
 
         <StatsCards />
         
-        <div className="space-y-8">
-          <WorkEntryForm />
-          <RecentWorkTable />
-        </div>
+        <Tabs defaultValue="work-entries" className="space-y-6">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="work-entries">Work Entries</TabsTrigger>
+            <TabsTrigger value="colleges">College Management</TabsTrigger>
+          </TabsList>
+          
+          <TabsContent value="work-entries" className="space-y-8">
+            <WorkEntryForm />
+            <RecentWorkTable />
+          </TabsContent>
+          
+          <TabsContent value="colleges">
+            <CollegeManagement />
+          </TabsContent>
+        </Tabs>
       </main>
     </div>
   );

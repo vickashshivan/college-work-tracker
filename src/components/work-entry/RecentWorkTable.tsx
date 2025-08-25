@@ -2,54 +2,15 @@ import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Eye, Edit, Trash2 } from "lucide-react";
-
-const recentWork = [
-  {
-    id: "001",
-    college: "ABC Engineering",
-    block: "Block A",
-    floor: "1st Floor",
-    place: "Classroom 101",
-    work: "Painting Walls",
-    type: "Renovation",
-    sqFeet: 506,
-    rate: 30,
-    finalRate: 15180,
-    date: "2025-08-25",
-    status: "completed"
-  },
-  {
-    id: "002",
-    college: "XYZ Arts College",
-    block: "Block B",
-    floor: "Ground Floor",
-    place: "Library Hall",
-    work: "Floor Cleaning",
-    type: "Maintenance",
-    sqFeet: 1200,
-    rate: 15,
-    finalRate: 18000,
-    date: "2025-08-24",
-    status: "in-progress"
-  },
-  {
-    id: "003",
-    college: "Tech University",
-    block: "Block C",
-    floor: "2nd Floor",
-    place: "Computer Lab",
-    work: "AC Installation",
-    type: "New Work",
-    sqFeet: 800,
-    rate: 45,
-    finalRate: 36000,
-    date: "2025-08-23",
-    status: "pending"
-  }
-];
+import { Eye, Edit, Trash2, Download } from "lucide-react";
+import { useWorkEntries, useDeleteWorkEntry } from "@/hooks/useWorkEntries";
+import { exportToExcel } from "@/utils/excelExport";
+import { AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent, AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger } from "@/components/ui/alert-dialog";
 
 export const RecentWorkTable = () => {
+  const { data: workEntries = [], isLoading } = useWorkEntries();
+  const deleteWorkEntry = useDeleteWorkEntry();
+
   const getStatusColor = (status: string) => {
     switch (status) {
       case 'completed': return 'bg-success/10 text-success border-success/20';
@@ -59,74 +20,139 @@ export const RecentWorkTable = () => {
     }
   };
 
+  const handleDelete = async (id: string) => {
+    await deleteWorkEntry.mutateAsync(id);
+  };
+
+  const handleExport = () => {
+    if (workEntries.length > 0) {
+      exportToExcel(workEntries);
+    }
+  };
+
+  if (isLoading) {
+    return (
+      <Card className="p-6 bg-gradient-card border-0 shadow-card">
+        <div className="flex justify-center p-8">Loading work entries...</div>
+      </Card>
+    );
+  }
+
   return (
     <Card className="p-6 bg-gradient-card border-0 shadow-card">
       <div className="flex items-center justify-between mb-6">
         <h3 className="text-lg font-semibold text-foreground">Recent Work Entries</h3>
-        <Button variant="outline" size="sm">View All</Button>
+        <div className="flex gap-2">
+          <Button onClick={handleExport} variant="outline" size="sm" disabled={workEntries.length === 0}>
+            <Download className="h-4 w-4 mr-2" />
+            Export Excel
+          </Button>
+        </div>
       </div>
 
-      <div className="overflow-x-auto">
-        <Table>
-          <TableHeader>
-            <TableRow>
-              <TableHead>S.No</TableHead>
-              <TableHead>College</TableHead>
-              <TableHead>Location</TableHead>
-              <TableHead>Work</TableHead>
-              <TableHead>Type</TableHead>
-              <TableHead>Sq.Ft</TableHead>
-              <TableHead>Rate</TableHead>
-              <TableHead>Final Rate</TableHead>
-              <TableHead>Date</TableHead>
-              <TableHead>Status</TableHead>
-              <TableHead>Actions</TableHead>
-            </TableRow>
-          </TableHeader>
-          <TableBody>
-            {recentWork.map((work) => (
-              <TableRow key={work.id} className="hover:bg-accent/50">
-                <TableCell className="font-medium">{work.id}</TableCell>
-                <TableCell>{work.college}</TableCell>
-                <TableCell>
-                  <div className="text-sm">
-                    <div>{work.block}</div>
-                    <div className="text-muted-foreground">{work.floor}, {work.place}</div>
-                  </div>
-                </TableCell>
-                <TableCell>{work.work}</TableCell>
-                <TableCell>
-                  <Badge variant="outline" className="text-xs">
-                    {work.type}
-                  </Badge>
-                </TableCell>
-                <TableCell>{work.sqFeet} ft²</TableCell>
-                <TableCell>₹{work.rate}</TableCell>
-                <TableCell className="font-semibold">₹{work.finalRate.toLocaleString()}</TableCell>
-                <TableCell>{work.date}</TableCell>
-                <TableCell>
-                  <Badge className={getStatusColor(work.status)}>
-                    {work.status.replace('-', ' ')}
-                  </Badge>
-                </TableCell>
-                <TableCell>
-                  <div className="flex space-x-1">
-                    <Button variant="ghost" size="sm">
-                      <Eye className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="sm">
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive">
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </TableCell>
+      {workEntries.length === 0 ? (
+        <div className="text-center py-8">
+          <p className="text-muted-foreground">No work entries found. Create your first work entry to get started.</p>
+        </div>
+      ) : (
+        <div className="overflow-x-auto">
+          <Table>
+            <TableHeader>
+              <TableRow>
+                <TableHead>Date</TableHead>
+                <TableHead>College</TableHead>
+                <TableHead>Location</TableHead>
+                <TableHead>Work Description</TableHead>
+                <TableHead>Type</TableHead>
+                <TableHead>Dimensions</TableHead>
+                <TableHead>Sq.Ft</TableHead>
+                <TableHead>Rate</TableHead>
+                <TableHead>Final Rate</TableHead>
+                <TableHead>Status</TableHead>
+                <TableHead>Actions</TableHead>
               </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </div>
+            </TableHeader>
+            <TableBody>
+              {workEntries.map((entry) => (
+                <TableRow key={entry.id} className="hover:bg-accent/50">
+                  <TableCell>{new Date(entry.date).toLocaleDateString()}</TableCell>
+                  <TableCell>
+                    <div className="text-sm">
+                      <div className="font-medium">{entry.colleges?.name || 'N/A'}</div>
+                      {entry.colleges?.location && (
+                        <div className="text-muted-foreground text-xs">{entry.colleges.location}</div>
+                      )}
+                    </div>
+                  </TableCell>
+                  <TableCell>{entry.location}</TableCell>
+                  <TableCell className="max-w-[200px] truncate">
+                    {entry.work_description}
+                  </TableCell>
+                  <TableCell>
+                    <Badge variant="outline" className="text-xs">
+                      {entry.work_type || 'N/A'}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <div className="text-xs">
+                      {entry.length && entry.width ? (
+                        <>
+                          <div>L: {entry.length}ft</div>
+                          <div>W: {entry.width}ft</div>
+                          {entry.height && <div>H: {entry.height}ft</div>}
+                        </>
+                      ) : (
+                        'N/A'
+                      )}
+                    </div>
+                  </TableCell>
+                  <TableCell>{entry.square_feet ? `${entry.square_feet} ft²` : 'N/A'}</TableCell>
+                  <TableCell>{entry.rate_per_sqft ? `₹${entry.rate_per_sqft}` : 'N/A'}</TableCell>
+                  <TableCell className="font-semibold">
+                    {entry.final_rate ? `₹${entry.final_rate.toLocaleString()}` : 'N/A'}
+                  </TableCell>
+                  <TableCell>
+                    <Badge className={getStatusColor(entry.status)}>
+                      {entry.status.replace('-', ' ')}
+                    </Badge>
+                  </TableCell>
+                  <TableCell>
+                    <div className="flex space-x-1">
+                      <Button variant="ghost" size="sm">
+                        <Eye className="h-4 w-4" />
+                      </Button>
+                      <Button variant="ghost" size="sm">
+                        <Edit className="h-4 w-4" />
+                      </Button>
+                      <AlertDialog>
+                        <AlertDialogTrigger asChild>
+                          <Button variant="ghost" size="sm" className="text-destructive hover:text-destructive">
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </AlertDialogTrigger>
+                        <AlertDialogContent>
+                          <AlertDialogHeader>
+                            <AlertDialogTitle>Delete Work Entry</AlertDialogTitle>
+                            <AlertDialogDescription>
+                              Are you sure you want to delete this work entry? This action cannot be undone.
+                            </AlertDialogDescription>
+                          </AlertDialogHeader>
+                          <AlertDialogFooter>
+                            <AlertDialogCancel>Cancel</AlertDialogCancel>
+                            <AlertDialogAction onClick={() => handleDelete(entry.id)}>
+                              Delete
+                            </AlertDialogAction>
+                          </AlertDialogFooter>
+                        </AlertDialogContent>
+                      </AlertDialog>
+                    </div>
+                  </TableCell>
+                </TableRow>
+              ))}
+            </TableBody>
+          </Table>
+        </div>
+      )}
     </Card>
   );
 };
