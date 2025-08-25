@@ -14,7 +14,104 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      colleges: {
+        Row: {
+          address: string | null
+          contact_person: string | null
+          created_at: string
+          email: string | null
+          id: string
+          location: string | null
+          name: string
+          phone: string | null
+          updated_at: string
+        }
+        Insert: {
+          address?: string | null
+          contact_person?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          location?: string | null
+          name: string
+          phone?: string | null
+          updated_at?: string
+        }
+        Update: {
+          address?: string | null
+          contact_person?: string | null
+          created_at?: string
+          email?: string | null
+          id?: string
+          location?: string | null
+          name?: string
+          phone?: string | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
+      work_entries: {
+        Row: {
+          college_id: string
+          created_at: string
+          date: string
+          final_rate: number | null
+          height: number | null
+          id: string
+          length: number | null
+          location: string
+          rate_per_sqft: number | null
+          square_feet: number | null
+          status: string | null
+          updated_at: string
+          width: number | null
+          work_description: string
+          work_type: string
+        }
+        Insert: {
+          college_id: string
+          created_at?: string
+          date?: string
+          final_rate?: number | null
+          height?: number | null
+          id?: string
+          length?: number | null
+          location: string
+          rate_per_sqft?: number | null
+          square_feet?: number | null
+          status?: string | null
+          updated_at?: string
+          width?: number | null
+          work_description: string
+          work_type: string
+        }
+        Update: {
+          college_id?: string
+          created_at?: string
+          date?: string
+          final_rate?: number | null
+          height?: number | null
+          id?: string
+          length?: number | null
+          location?: string
+          rate_per_sqft?: number | null
+          square_feet?: number | null
+          status?: string | null
+          updated_at?: string
+          width?: number | null
+          work_description?: string
+          work_type?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "work_entries_college_id_fkey"
+            columns: ["college_id"]
+            isOneToOne: false
+            referencedRelation: "colleges"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
     }
     Views: {
       [_ in never]: never
